@@ -6,8 +6,5 @@ import lombok.Data;
 
 import java.util.List;
 
-@Data @Builder
-public class InvoiceEvent {
-    private String orderNumber;
-    private List<OrderItem> orderItems;
+public record InvoiceEvent(String orderNumber, List<OrderItem> orderItems) {
 }

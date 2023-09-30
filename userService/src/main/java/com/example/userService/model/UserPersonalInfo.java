@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @Table(name = "user_personal_info")
 @Data @AllArgsConstructor @NoArgsConstructor @Builder
 public class UserPersonalInfo {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

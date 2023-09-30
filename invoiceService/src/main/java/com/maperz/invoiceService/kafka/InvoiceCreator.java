@@ -1,8 +1,8 @@
 package com.maperz.invoiceService.kafka;
 
-import com.maperz.invoiceService.dto.UserDTO;
 import com.maperz.invoiceService.event.InvoiceEvent;
 import com.maperz.invoiceService.service.InvoiceService;
+import com.maperz.invoiceService.service.impl.InvoiceServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -16,8 +16,8 @@ public class InvoiceCreator {
     @KafkaListener(topics = "InvoiceTopic")
     public void createInvoiceEvent(InvoiceEvent event){
         // create an invoice
+        log.info("Received Notification for Order -" + event.orderNumber());
         invoiceService.createInvoice(event);
-        log.info("Received Notification for Order -" + event.getOrderNumber());
     }
 
 }

@@ -17,6 +17,9 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
 
+  codec:
+    max-in-memory-size: 10MB
+
   # Kafka Config
   kafka:
     bootstrap-servers: localhost:9092

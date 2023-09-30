@@ -42,6 +42,7 @@ public class OrderController {
     }
 
     // Fallback method
+
     public CompletableFuture<Void> placeAnOrderFallback(OrderDTO request, String currency, Throwable throwable){
         return CompletableFuture.runAsync(() -> System.out.println("Fallback method"));
     }

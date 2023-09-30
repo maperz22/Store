@@ -42,25 +42,11 @@ public class UserController {
     @GetMapping("/{orderNumber}")
     @ResponseStatus(HttpStatus.OK)
     public UserInvoiceDTO getUser(@PathVariable("orderNumber") String orderNumber){
-        // create user
         return userService.findUserByOrderNumber(orderNumber);
-
-                /*
-                ResponseEntity.ok().body(
-                HttpResponse.builder()
-                        .timestamp(LocalDateTime.now().toString())
-                        .data(Map.of("user", user))
-                        .message("User found")
-                        .httpStatus(HttpStatus.OK)
-                        .statusCode(HttpStatus.OK.value())
-                        .build()
-        );
-
-                     */
     }
 
     @GetMapping("/confirm")
-    public ResponseEntity<HttpResponse> createUser(@RequestParam("token") String token){
+    public ResponseEntity<HttpResponse> confirmUser(@RequestParam("token") String token){
         // create user
         Boolean isSuccess = userService.verifyToken(token);
         return ResponseEntity.ok().body(

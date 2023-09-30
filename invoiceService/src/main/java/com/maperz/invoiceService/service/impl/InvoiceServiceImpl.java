@@ -1,9 +1,12 @@
-package com.maperz.invoiceService.service;
+package com.maperz.invoiceService.service.impl;
 
 import com.maperz.invoiceService.dto.*;
 import com.maperz.invoiceService.event.InvoiceEvent;
 import com.maperz.invoiceService.model.Invoice;
 import com.maperz.invoiceService.repository.InvoiceRepository;
+import com.maperz.invoiceService.service.InvoiceRequestService;
+import com.maperz.invoiceService.service.InvoiceService;
+import com.maperz.invoiceService.service.UserInfoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,11 +21,11 @@ import java.time.format.DateTimeFormatter;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class InvoiceService {
+public class InvoiceServiceImpl implements InvoiceService {
 
-    private final RestTemplate restTemplate;
-    private final WebClient webClient;
     private final InvoiceRepository invoiceRepository;
+    private final UserInfoService userInfoService;
+    private final InvoiceRequestService invoiceRequestService;
 
     private final String shopName = "Maperz Sp. z o.o. \n" +
             "ul. Pierwszalepsza 123 \n" +
@@ -31,7 +34,7 @@ public class InvoiceService {
 
     private final String logo = "https://images.unsplash.com/photo-1624797432677-6f803a98acb3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1972&q=80";
 
-    public String findInvoice(String orderNumber){
+    public String findInvoice(String orderNumber) {
         log.info("Looking for invoice for order number: " + orderNumber);
         try {
             Thread.sleep(2000);
@@ -47,15 +50,7 @@ public class InvoiceService {
     public void createInvoice(InvoiceEvent event) {
 
         // Call user service to get user details
-        UserDTO user = webClient
-                .get()
-                .uri("http://localhost:8080/user/api/" + event.orderNumber())
-                .retrieve()
-                .bodyToMono(UserDTO.class)
-                .block();
-
-                //restTemplate.getForEntity("http://localhost:8080/user/api/" + event.orderNumber(), UserDTO.class).getBody();
-
+        UserDTO user = userInfoService.getUserInfoByOrderNumber(event.orderNumber());
 
         Item[] items =
                 event.orderItems()
@@ -65,42 +60,32 @@ public class InvoiceService {
                         orderItem.quantity(),
                         orderItem.price().doubleValue()))
                 .toArray(Item[]::new);
-        InvoiceFields fields = InvoiceFields.builder()
-                .tax("%")
-                .discounts(false)
-                .shipping(true)
-                .build();
+        InvoiceFields fields = new InvoiceFields("%", false, true);
+        InvoiceMaker invoice = new InvoiceMaker(
+                shopName,
+                onInvoiceName(user),
+                logo,
+                invoiceNumberGenerator(),
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")),
+                items,
+                "Thank you for your business.",
+                "VAT",
+                fields,
+                23,
+                15);
 
-        InvoiceMaker invoice = new InvoiceMaker(shopName,onInvoiceName(user), logo ,invoiceNumberGenerator(),);
-
-                .date(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")))
-                .items(items)
-                .notes("Thank you for your business.")
-                .tax_title("VAT")
-                .fields(fields)
-                .tax(23)
-                .shipping(15)
-                .build();
 
         Invoice invoiceEntity = Invoice.builder()
                 .orderNumber(event.orderNumber())
-                .invoiceNumber(invoice.getNumber())
+                .invoiceNumber(invoice.number())
                 .path("C:\\Users\\Maciek\\OneDrive\\Pulpit\\Projekt na Juniora\\invoices\\invoice-" +
-                        invoice.getNumber() +
+                        invoice.number() +
                         ".pdf")
                 .build();
 
         try {
             FileOutputStream fos = new FileOutputStream(invoiceEntity.getPath());
-            byte[] bytes = webClient
-                    .post()
-                    .uri("https://invoice-generator.com")
-                    .bodyValue(invoice)
-                    .retrieve()
-                    .bodyToMono(byte[].class)
-                    .block();
-
-                    //restTemplate.postForEntity("https://invoice-generator.com", invoice, byte[].class).getBody();
+            byte[] bytes = invoiceRequestService.requestInvoice(invoice);
             assert bytes != null;
             fos.write(bytes);
             fos.close();

@@ -1,14 +1,4 @@
-package com.maperz.event;
+package com.maperz.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data @Builder @AllArgsConstructor
-@NoArgsConstructor
-public class UserConfirmationDTO {
-    private String name;
-    private String email;
-    private String token;
+public record UserConfirmationDTO(String name, String email, String token) {
 }

@@ -1,31 +1,30 @@
-package com.maperz.pruductService.service;
+package com.maperz.pruductService.service.impl;
 
-import com.maperz.pruductService.dto.ProductRequest;
-import com.maperz.pruductService.dto.ProductResponse;
+import com.maperz.pruductService.dto.ProductDTO;
 import com.maperz.pruductService.model.Product;
 import com.maperz.pruductService.repository.ProductRepository;
+import com.maperz.pruductService.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class ProductService {
+public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository repository;
 
 
-    public void addProduct(ProductRequest request){
+    public void addProduct(ProductDTO request) {
 
-        if(!repository.existsByName(request.getName())) {
+        if(!repository.existsByName(request.name())) {
             Product product = Product.builder()
-                    .description(request.getDescription())
-                    .name(request.getName())
-                    .price(request.getPrice())
+                    .description(request.description())
+                    .name(request.name())
+                    .price(request.price())
                     .build();
 
             repository.save(product);
@@ -36,14 +35,13 @@ public class ProductService {
     }
 
 
-    public List<ProductResponse> getAllProducts() {
+    public List<ProductDTO> getAllProducts() {
         List<Product> products = repository.findAll();
-        List<ProductResponse> responses = products.stream().map(this::mapToProductResponse).toList();
-        return responses;
+        return products.stream().map(this::mapToProductResponse).toList();
     }
 
 
-    public ProductResponse getProduct(String name) {
+    public ProductDTO getProduct(String name) {
         Product product = repository.findByName(refactorToName(name));
         return mapToProductResponse(product);
     }
@@ -60,13 +58,12 @@ public class ProductService {
         }
     }
 
-    private ProductResponse mapToProductResponse(Product product) {
-        return ProductResponse.builder()
-                .id(product.getId())
-                .name(product.getName())
-                .description(product.getDescription())
-                .price(product.getPrice())
-                .build();
+    private ProductDTO mapToProductResponse(Product product) {
+        return new ProductDTO(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getPrice());
     }
 
     private String refactorToName(String toRefactor){

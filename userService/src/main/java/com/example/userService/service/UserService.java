@@ -73,14 +73,18 @@ public class UserService {
     }
 
     public Boolean verifyToken(String token){
-        Confirmation confirmation = confirmationRepository.findByToken(token).orElseThrow();
+        if (!confirmationRepository.existsByToken(token) && !confirmationRepository.findByToken(token).get().getUser().getIsActive()){
+            log.error("Invalid token");
+            throw new RuntimeException("Invalid token");
+        } else {
+        Confirmation confirmation = confirmationRepository.findByToken(token).orElseThrow(() -> new RuntimeException("Invalid token"));
         User user = confirmation.getUser();
         user.setIsActive(true);
         userRepository.save(user);
         confirmationRepository.delete(confirmation);
         log.info("User confirmed");
-
         return Boolean.TRUE;
+        }
     }
 
     public void updateOrderHistory(OrderDTO orderDTO){
@@ -101,7 +105,7 @@ public class UserService {
         User user = userRepository.findByOrdersIsContaining(
                 orderRepository.findByOrderNumber(orderNumber).orElseThrow()
         ).orElseThrow();
-
+        log.info("User found");
         return UserInvoiceDTO.builder()
                 .email(user.getEmail())
                 .name(user.getName())

@@ -2,7 +2,7 @@ package com.maperz.inventoryService.controller;
 
 
 import com.maperz.inventoryService.dto.InventoryDTO;
-import com.maperz.inventoryService.service.InventoryService;
+import com.maperz.inventoryService.service.impl.InventoryServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -16,7 +16,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class InventoryController {
 
-    private final InventoryService service;
+    private final InventoryServiceImpl service;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)

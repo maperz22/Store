@@ -1,8 +1,9 @@
-package com.maperz.inventoryService.service;
+package com.maperz.inventoryService.service.impl;
 
 import com.maperz.inventoryService.dto.InventoryDTO;
 import com.maperz.inventoryService.model.Inventory;
 import com.maperz.inventoryService.repository.InventoryRepository;
+import com.maperz.inventoryService.service.InventoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -13,9 +14,10 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class InventoryService {
+public class InventoryServiceImpl implements InventoryService {
 
     private final InventoryRepository repository;
+
 
     public List<InventoryDTO> isInStock(List<String> skuCode) {
         if (skuCode.contains("all")) {

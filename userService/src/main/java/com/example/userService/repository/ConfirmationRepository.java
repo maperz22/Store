@@ -7,5 +7,7 @@ import java.util.Optional;
 
 public interface ConfirmationRepository extends JpaRepository<Confirmation, Integer> {
 
+    Boolean existsByToken(String token);
+
     Optional<Confirmation> findByToken(String token);
 }

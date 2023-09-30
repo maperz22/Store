@@ -1,8 +1,8 @@
 package com.maperz.pruductService.controller;
 
-import com.maperz.pruductService.dto.ProductRequest;
-import com.maperz.pruductService.dto.ProductResponse;
+import com.maperz.pruductService.dto.ProductDTO;
 import com.maperz.pruductService.service.ProductService;
+import com.maperz.pruductService.service.impl.ProductServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -17,19 +17,19 @@ public class ProductController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void addProduct(@RequestBody ProductRequest request){
+    public void addProduct(@RequestBody ProductDTO request){
         service.addProduct(request);
     }
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<ProductResponse> getAllProducts(){
+    public List<ProductDTO> getAllProducts(){
         return service.getAllProducts();
     }
 
     @GetMapping(value = "/{name}")
     @ResponseStatus(HttpStatus.OK)
-    public ProductResponse getProduct(@PathVariable String name) {
+    public ProductDTO getProduct(@PathVariable String name) {
         return service.getProduct(name);
     }
 

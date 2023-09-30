@@ -32,10 +32,11 @@ public class OrderService {
 
     private final OrderRepository repository;
     private final WebClient.Builder webClient;
+    private final WebClient webClient2;
     private final KafkaTemplate<String, String> kafkaTemplate;
-    private final RestTemplate restTemplate;
 
     @Async
+    @Transactional
     public CompletableFuture<Void> placeAnOrder(OrderDTO request, String currency){
 
         Order order = new Order();
@@ -75,7 +76,14 @@ public class OrderService {
             if (currency.equals("PLN")) {
                 log.info("Total price of the order is {}", totalPrice);
             } else {
-            Currency block = restTemplate.getForObject("http://api.nbp.pl/api/exchangerates/rates/a/" + currency + "/?format=json", Currency.class);
+            Currency block = webClient2.get()
+                    .uri("http://api.nbp.pl/api/exchangerates/rates/a/" + currency + "/?format=json")
+                    .retrieve()
+                    .bodyToMono(Currency.class)
+                    .block();
+
+
+                    // restTemplate.getForObject("http://api.nbp.pl/api/exchangerates/rates/a/" + currency + "/?format=json", Currency.class);
 
                 double mid = block.getRates()[0].getMid();
 
@@ -90,8 +98,6 @@ public class OrderService {
                     .orderNumber(order.getOrderNumber())
                     .userEmail(request.getUserEmail())
                     .build());
-
-
             // Call inventory service to update the inventory
                 Map<String, Integer> requests = new HashMap<>();
                 order.getOrderItemsList()
@@ -106,10 +112,7 @@ public class OrderService {
                         .block();
 
             // Call invoice service to generate the invoice
-            createInvoice(InvoiceEvent.builder()
-                    .orderNumber(order.getOrderNumber())
-                    .orderItems(order.getOrderItemsList())
-                    .build());
+            createInvoice(new InvoiceEvent(order.getOrderNumber(), order.getOrderItemsList()));
 
             // Call shipping service to ship the order
 
@@ -121,7 +124,7 @@ public class OrderService {
             sendOrderConfirmation(new OrderPlacedEvent(order.getOrderNumber()));
 
         }
-        return null;
+        return CompletableFuture.completedFuture(null);
     }
 
     private void createInvoice(InvoiceEvent event) {
